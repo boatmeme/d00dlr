@@ -1,5 +1,7 @@
 var async   = require('async');
 var express = require('express');
+var url = require('url');
+var http = require('http');
 var util    = require('util');
 
 // create an express webserver
@@ -11,8 +13,8 @@ var app = express.createServer(
   // set this to a secret value to encrypt session cookies
   express.session({ secret: process.env.SESSION_SECRET || 'secret123' }),
   require('faceplate').middleware({
-    app_id: process.env.FACEBOOK_APP_ID,
-    secret: process.env.FACEBOOK_SECRET,
+    app_id: process.env.FACEBOOK_APP_ID || process.argv[2],
+    secret: process.env.FACEBOOK_SECRET || process.argv[3],
     scope:  'user_likes,user_photos,user_photo_video_tags'
   })
 );
@@ -99,5 +101,52 @@ function handle_facebook_request(req, res) {
   }
 }
 
+function handle_draw_request(req,res) {
+    res.render('draw.ejs',{
+        layout:    false,
+        req:       req
+      });
+}
+
+function handle_image_request(proxyReq,proxyResp) {
+    console.log(proxyReq.params.url);
+    var imgURL = proxyReq.params.url;
+    if(imgURL) {
+        var destParams = url.parse(imgURL);
+        var reqOptions = {
+            host : destParams.host,
+            port : destParams.port,
+            path : destParams.pathname,
+            method : "GET"
+        };
+        var req = http.request(reqOptions, function(res) {
+            var headers = res.headers;
+            headers['Access-Control-Allow-Origin'] = '*';
+            headers['Access-Control-Allow-Headers'] = 'X-Requested-With';
+            proxyResp.writeHead(200, headers);
+    
+            res.on('data', function(chunk) {
+                proxyResp.write(chunk);
+            });
+    
+            res.on('end', function() {
+                proxyResp.end();
+            });
+        });
+
+        req.on('error', function(e) {
+            console.log('problem with request: ' + e.message);
+            proxyResp.writeHead(503);
+            proxyResp.write("An error happened!");
+            proxyResp.end();
+        });
+        req.end();
+    }
+}
+
 app.get('/', handle_facebook_request);
 app.post('/', handle_facebook_request);
+app.get('/draw', handle_draw_request);
+app.get('/image/:url', handle_image_request);
+
+
