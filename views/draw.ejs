@@ -23,10 +23,11 @@
   <body>
   	<div id="container">
   		<div><input type="text" id="url"><button id="fetchImage">Fetch Image</button></div>
-  		<div><button id="postImage">Post Image</button></div>
+  		<div><button id="postImage">Post Image</button><button id="downloadImage">Download Image</button></div>
   		<div id="canvasContainer">
   			<canvas id="imageCanvas" style="z-index:1;"></canvas>
     		<canvas id="myCanvas" style="z-index:2;"></canvas>
+            <canvas id="destinationCanvas" style="z-index:3;visibility: hidden; "></canvas>
     	</div>
     </div>
   </body>
@@ -42,11 +43,30 @@
 			}
 		});
 		$("#postImage").on('click',function() {
-			var canvas = document.getElementById("imageCanvas");
-			var data = canvas.toDataURL("image/png");
+			var data = getImageDataUrl("image/png");
 			console.log(data);
 		});
+        $("#downloadImage").on('click',function() {
+			var data = getImageDataUrl("image/png");
+            var downloadUrl = document.location.hostname + "/download/" + encodeURIComponent(data);
+            console.log(downloadUrl);
+            document.location.href = downloadUrl;
+		});
     });
+
+    function getImageDataUrl(type) {
+        var destCanvas = document.getElementById("destinationCanvas");
+        destCanvas.width  = window.innerWidth-50;
+    	destCanvas.height = window.innerHeight-50;
+        var destCtx = destCanvas.getContext('2d');
+
+        var canvas1 = document.getElementById("imageCanvas");
+        var canvas2 = document.getElementById("myCanvas");
+        destCtx.drawImage(canvas1,0,0);
+        destCtx.drawImage(canvas2,0,0);
+        return destCanvas.toDataURL(type);
+    }
+
     function drawImage(url) {
     	var canvas = document.getElementById("imageCanvas");
 		var context = canvas.getContext("2d");

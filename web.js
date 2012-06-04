@@ -13,8 +13,8 @@ var app = express.createServer(
   // set this to a secret value to encrypt session cookies
   express.session({ secret: process.env.SESSION_SECRET || 'secret123' }),
   require('faceplate').middleware({
-    app_id: process.env.FACEBOOK_APP_ID || process.argv[2],
-    secret: process.env.FACEBOOK_SECRET || process.argv[3],
+    app_id: process.env.FACEBOOK_APP_ID,// || process.argv[2],
+    secret: process.env.FACEBOOK_SECRET,// || process.argv[3],
     scope:  'user_likes,user_photos,user_photo_video_tags'
   })
 );
@@ -109,7 +109,6 @@ function handle_draw_request(req,res) {
 }
 
 function handle_image_request(proxyReq,proxyResp) {
-    console.log(proxyReq.params.url);
     var imgURL = proxyReq.params.url;
     if(imgURL) {
         var destParams = url.parse(imgURL);
@@ -141,12 +140,31 @@ function handle_image_request(proxyReq,proxyResp) {
             proxyResp.end();
         });
         req.end();
+    } else {
+        proxyResp.writeHead(503);
+        proxyResp.write("Must provide a URL!");
+        proxyResp.end();  
+    }
+}
+
+function handle_download_request(proxyReq,proxyResp) {
+    var imgData = proxyReq.params.data;
+    if(imgData) {
+        imgData.replace(/^data:image\/png;base64,/,"");
+        var dataBuffer = new Buffer(imgData, 'base64');
+        proxyResp.write(dataBuffer.toString('binary'));
+        proxyResp.end();
+    } else {
+        proxyResp.writeHead(503);
+        proxyResp.write("Must provide image data!");
+        proxyResp.end();  
     }
 }
 
 app.get('/', handle_facebook_request);
 app.post('/', handle_facebook_request);
 app.get('/draw', handle_draw_request);
+app.get('/download/:data', handle_download_request);
 app.get('/image/:url', handle_image_request);
 
 
