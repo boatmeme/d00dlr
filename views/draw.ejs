@@ -12,10 +12,14 @@
 		}
 		#imageCanvas {
 			position:absolute;
+            top:0px;
+            left:0px;
 			border: 1px solid #9C9898;
 		}
 		#myCanvas {
 			position:absolute;
+            top:0px;
+            left:0px;
 			border: 1px solid #9C9898;
 		}
 	</style>
@@ -30,12 +34,13 @@
             <canvas id="destinationCanvas" style="z-index:3;visibility: hidden; "></canvas>
     	</div>
     </div>
+    <form id="downloadForm" action="/download" method="POST"><input type="hidden" name="dataUrl" id="dataUrl"/></form>
   </body>
   <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
   <script type="text/javascript">
     $(document).ready(function() {
     	initDrawingCanvas();
-		drawImage("https://fbcdn-profile-a.akamaihd.net/hprofile-ak-snc4/173102_100000875761191_1026657791_n.jpg");
+		drawImage("<%= req.params.url %>");
 		$("#fetchImage").on('click', function() {
 			var url = $("#url").val();
 			if(url&&url.trim()!="") {
@@ -44,38 +49,37 @@
 		});
 		$("#postImage").on('click',function() {
 			var data = getImageDataUrl("image/png");
-			console.log(data);
 		});
         $("#downloadImage").on('click',function() {
 			var data = getImageDataUrl("image/png");
-            var downloadUrl = document.location.hostname + "/download/" + encodeURIComponent(data);
-            console.log(downloadUrl);
-            document.location.href = downloadUrl;
+            $('#dataUrl').val(data);
+            $('#downloadForm').submit();
 		});
     });
 
     function getImageDataUrl(type) {
         var destCanvas = document.getElementById("destinationCanvas");
-        destCanvas.width  = window.innerWidth-50;
-    	destCanvas.height = window.innerHeight-50;
         var destCtx = destCanvas.getContext('2d');
 
         var canvas1 = document.getElementById("imageCanvas");
         var canvas2 = document.getElementById("myCanvas");
+        destCanvas.width  = canvas2.width;
+        destCanvas.height = canvas2.height;
         destCtx.drawImage(canvas1,0,0);
         destCtx.drawImage(canvas2,0,0);
         return destCanvas.toDataURL(type);
     }
 
     function drawImage(url) {
-    	var canvas = document.getElementById("imageCanvas");
-		var context = canvas.getContext("2d");
-		canvas.width  = window.innerWidth-50;
-		canvas.height = window.innerHeight-50;
 		var imageObj = new Image();
 
 		imageObj.onload = function() {
-		  context.drawImage(imageObj, 69, 50);
+          var canvas = document.getElementById("imageCanvas");
+          canvas.width  = this.width;
+          canvas.height = this.height;
+    	  var context = canvas.getContext("2d");
+          initDrawingCanvas(this.width,this.height);
+		  context.drawImage(imageObj, 0, 0);
 		};
         imageObj.src = "/image/" + encodeURIComponent(url);
     }
@@ -84,11 +88,11 @@
     }
 
     //Drawing Code
-    function initDrawingCanvas() {
+    function initDrawingCanvas(width, height) {
     	var canvas = document.getElementById("myCanvas");
 		var context = canvas.getContext("2d");
-		canvas.width  = window.innerWidth-50;
-		canvas.height = window.innerHeight-50;
+		canvas.width  = width;
+		canvas.height = height;
     }
     $('#myCanvas').mousedown(function(e){
   		var mouseX = e.pageX - this.offsetLeft;

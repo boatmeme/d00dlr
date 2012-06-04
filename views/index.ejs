@@ -196,7 +196,8 @@
         <ul id="photos" class="photos">
           <% req.photos.forEach(function(photo) { %>
             <li style="background-image: url(<%= photo.picture %>>);" class="<%= photo.link %>">
-              <a href="<%= photo.link %>>" target="_top"></a>
+              <a href="/draw/<%= encodeURIComponent(photo.source) %>"> target="_top"></a>
+              <!--<a href="<%= photo.link %>"> target="_top"></a>-->
             </li>
           <% }); %>
         </ul>

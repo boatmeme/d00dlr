@@ -13,8 +13,8 @@ var app = express.createServer(
   // set this to a secret value to encrypt session cookies
   express.session({ secret: process.env.SESSION_SECRET || 'secret123' }),
   require('faceplate').middleware({
-    app_id: process.env.FACEBOOK_APP_ID,// || process.argv[2],
-    secret: process.env.FACEBOOK_SECRET,// || process.argv[3],
+    app_id: process.env.FACEBOOK_APP_ID || process.argv[2],
+    secret: process.env.FACEBOOK_SECRET || process.argv[3],
     scope:  'user_likes,user_photos,user_photo_video_tags'
   })
 );
@@ -102,9 +102,15 @@ function handle_facebook_request(req, res) {
 }
 
 function handle_draw_request(req,res) {
-    res.render('draw.ejs',{
-        layout:    false,
-        req:       req
+      req.facebook.app(function(app) {
+        req.facebook.me(function(user) {
+          res.render('draw.ejs', {
+            layout:    false,
+            req:       req,
+            app:       app,
+            user:      user
+          });
+        });
       });
 }
 
@@ -148,12 +154,13 @@ function handle_image_request(proxyReq,proxyResp) {
 }
 
 function handle_download_request(proxyReq,proxyResp) {
-    var imgData = proxyReq.params.data;
+    var imgData = proxyReq.body.dataUrl;
     if(imgData) {
-        imgData.replace(/^data:image\/png;base64,/,"");
-        var dataBuffer = new Buffer(imgData, 'base64');
-        proxyResp.write(dataBuffer.toString('binary'));
-        proxyResp.end();
+        var dataBuffer = new Buffer(imgData.replace(/^data:image\/png;base64,/,""), 'base64');
+        proxyResp.header('Content-Type','image/png;');
+        proxyResp.header('Content-Disposition','attachment; filename="d00dlr_' + Date.now() + '.png');
+        proxyResp.header('Content-Length', dataBuffer.length);
+        proxyResp.end(dataBuffer,'binary');
     } else {
         proxyResp.writeHead(503);
         proxyResp.write("Must provide image data!");
@@ -163,8 +170,6 @@ function handle_download_request(proxyReq,proxyResp) {
 
 app.get('/', handle_facebook_request);
 app.post('/', handle_facebook_request);
-app.get('/draw', handle_draw_request);
-app.get('/download/:data', handle_download_request);
+app.get('/draw/:url', handle_draw_request);
+app.post('/download', handle_download_request);
 app.get('/image/:url', handle_image_request);
-
-
