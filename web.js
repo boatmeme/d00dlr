@@ -2,6 +2,7 @@ var async   = require('async');
 var express = require('express');
 var url = require('url');
 var http = require('http');
+var https = require('https');
 var util    = require('util');
 
 // create an express webserver
@@ -119,23 +120,33 @@ function handle_image_request(proxyReq,proxyResp) {
     if(imgURL) {
         var destParams = url.parse(imgURL);
         var reqOptions = {
-            host : destParams.host,
+            hostname : destParams.hostname,
             port : destParams.port,
             path : destParams.pathname,
             method : "GET"
         };
-        var req = http.request(reqOptions, function(res) {
-            var headers = res.headers;
-            headers['Access-Control-Allow-Origin'] = '*';
-            headers['Access-Control-Allow-Headers'] = 'X-Requested-With';
-            proxyResp.writeHead(200, headers);
+        var protocol = (destParams.protocol == 'https:' ? https : http);
+        var req = protocol.request(reqOptions, function(res) {
+            proxyResp.header('Access-Control-Allow-Origin','*');
+            proxyResp.header('Access-Control-Allow-Headers','X-Requested-With');
     
             res.on('data', function(chunk) {
                 proxyResp.write(chunk);
             });
     
             res.on('end', function() {
-                proxyResp.end();
+                var redirect = false;
+                
+                if(this.headers.location) {
+                    proxyReq.params.url = this.headers.location;
+                    redirect = true;
+                }
+                if(redirect) {
+                    console.log('redirecting to :'+proxyReq.params.url);
+                    handle_image_request(proxyReq, proxyResp);
+                } else {
+                   proxyResp.end();
+                }
             });
         });
 
