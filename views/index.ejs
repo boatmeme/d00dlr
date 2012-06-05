@@ -183,7 +183,7 @@
           <% req.friends.forEach(function(friend) { %>
             <li>
               <!--<a href="https://www.facebook.com/<%= friend.id %>" target="_top">-->
-                <a href="/draw/<%= encodeURIComponent('https://graph.facebook.com/'+ friend.id + '/picture?type=square') %>">
+                <a href="/draw/<%= encodeURIComponent('https://graph.facebook.com/'+ friend.id + '/picture?type=large') %>">
                 <img src="https://graph.facebook.com/<%= friend.id %>/picture?type=square" alt="<%= friend.name %>">
                 <%= friend.name %>
               </a>

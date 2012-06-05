@@ -122,14 +122,14 @@ function handle_image_request(proxyReq,proxyResp) {
         var reqOptions = {
             hostname : destParams.hostname,
             port : destParams.port,
-            path : destParams.pathname,
+            path : destParams.path,
             method : "GET"
         };
         var protocol = (destParams.protocol == 'https:' ? https : http);
         var req = protocol.request(reqOptions, function(res) {
             proxyResp.header('Access-Control-Allow-Origin','*');
             proxyResp.header('Access-Control-Allow-Headers','X-Requested-With');
-    
+            
             res.on('data', function(chunk) {
                 proxyResp.write(chunk);
             });

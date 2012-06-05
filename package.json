@@ -1,8 +1,8 @@
 {
-  "name":    "facebook-template-node",
+  "name":    "d00dlr",
   "version": "0.0.1",
 
-  "description": "Template app for Heroku / Facebook integration, Node.js language",
+  "description": "Draw stuff on your Facebook friends' Photos",
 
   "dependencies": {
     "async":     "0.1.18",
