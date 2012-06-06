@@ -7,6 +7,9 @@
 		  height: 100%;
 		  margin: 0px;
 		}
+        canvas:active, canvas:focus {
+            cursor:pointer;
+        }
 		#canvasContainer {
 			position:relative;
 		}
@@ -14,13 +17,13 @@
 			position:absolute;
             top:0px;
             left:0px;
-			border: 1px solid #9C9898;
+			border: 2px solid #9C9898;
 		}
 		#myCanvas {
 			position:absolute;
             top:0px;
             left:0px;
-			border: 1px solid #9C9898;
+			border: 2px solid #9C9898;
 		}
 	</style>
   </head>
@@ -37,6 +40,7 @@
     <form id="downloadForm" action="/download" method="POST"><input type="hidden" name="dataUrl" id="dataUrl"/></form>
   </body>
   <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+  <script type="text/javascript" src="/scripts/spin.min.js"></script>
   <script type="text/javascript">
     $(document).ready(function() {
     	initDrawingCanvas();
@@ -51,10 +55,15 @@
 			var data = getImageDataUrl("image/png");
 		});
         $("#downloadImage").on('click',function() {
+            $("#canvasContainer").spin();
 			var data = getImageDataUrl("image/png");
             $('#dataUrl').val(data);
+            $("#canvasContainer").spin(false);
             $('#downloadForm').submit();
 		});
+        $("canvas").on('selectstart',function() {
+            return false;
+        })
     });
 
     function getImageDataUrl(type) {
@@ -72,14 +81,21 @@
 
     function drawImage(url) {
 		var imageObj = new Image();
+        var canvas = document.getElementById("imageCanvas");
+        $("#canvasContainer").css('width',canvas.width);
+        $("#canvasContainer").css('height',canvas.height);
+        $("#canvasContainer").spin();
 
 		imageObj.onload = function() {
-          var canvas = document.getElementById("imageCanvas");
           canvas.width  = this.width;
           canvas.height = this.height;
     	  var context = canvas.getContext("2d");
           initDrawingCanvas(this.width,this.height);
 		  context.drawImage(imageObj, 0, 0);
+          $("#canvasContainer").css('width',canvas.width);
+          $("#canvasContainer").css('height',canvas.height);
+          $("#canvasContainer").spin(false);
+          
 		};
         imageObj.src = "/image/" + encodeURIComponent(url);
     }
@@ -95,17 +111,21 @@
 		canvas.height = height;
     }
     $('#myCanvas').mousedown(function(e){
-  		var mouseX = e.pageX - this.offsetLeft;
-  		var mouseY = e.pageY - this.offsetTop;
+        var offset = $(this).offset();
+  		var mouseX = e.pageX - offset.left;
+  		var mouseY = e.pageY - offset.top;
 
   		paint = true;
-  		addClick(e.pageX - this.offsetLeft, e.pageY - this.offsetTop);
+  		addClick(mouseX, mouseY);
   		redraw();
 	});
 
 	$('#myCanvas').mousemove(function(e){
   		if(paint){
-    		addClick(e.pageX - this.offsetLeft, e.pageY - this.offsetTop, true);
+            var offset = $(this).offset();
+          	var mouseX = e.pageX - offset.left;
+      		var mouseY = e.pageY - offset.top;
+    		addClick(mouseX, mouseY, true);
     		redraw();
   		}
 	});
