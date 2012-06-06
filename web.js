@@ -106,7 +106,7 @@ function handle_draw_request(req,res) {
       req.facebook.app(function(app) {
         req.facebook.me(function(user) {
           res.render('draw.ejs', {
-            layout:    false,
+            layout:    true,
             req:       req,
             app:       app,
             user:      user

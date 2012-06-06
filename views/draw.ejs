@@ -1,66 +1,112 @@
-<!DOCTYPE HTML>
-<html>
-  <head>
     <style>
-		html, body {
-		  width:  100%;
-		  height: 100%;
-		  margin: 0px;
-		}
-        canvas:active, canvas:focus {
-            cursor:pointer;
-        }
-		#canvasContainer {
-			position:relative;
-		}
-		#imageCanvas {
-			position:absolute;
-            top:0px;
-            left:0px;
-			border: 2px solid #9C9898;
-		}
-		#myCanvas {
-			position:absolute;
-            top:0px;
-            left:0px;
-			border: 2px solid #9C9898;
-		}
-	</style>
-  </head>
-  <body>
-  	<div id="container">
-  		<div><input type="text" id="url"><button id="fetchImage">Fetch Image</button></div>
-  		<div><button id="postImage">Post Image</button><button id="downloadImage">Download Image</button></div>
-  		<div id="canvasContainer">
-  			<canvas id="imageCanvas" style="z-index:1;"></canvas>
-    		<canvas id="myCanvas" style="z-index:2;"></canvas>
-            <canvas id="destinationCanvas" style="z-index:3;visibility: hidden; "></canvas>
-    	</div>
+            html, body {
+              width:  100%;
+              height: 100%;
+              margin: 0px;
+            }
+            canvas:active, canvas:focus {
+                cursor:pointer;
+            }
+            #canvasContainer {
+                position:relative;
+            }
+            #imageCanvas {
+                position:absolute;
+                top:0px;
+                left:0px;
+                border: 2px solid #9C9898;
+            }
+            #myCanvas {
+                position:absolute;
+                top:0px;
+                left:0px;
+                border: 2px solid #9C9898;
+            }
+    </style>
+    <div class="navbar navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="#">d00dlr</a>
+          <div class="nav-collapse">
+            <ul class="nav">
+              <li class="active"><a href="#">Home</a></li>
+              <li><a href="#about">About</a></li>
+              <li><a href="#contact">Contact</a></li>
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
     </div>
-    <form id="downloadForm" action="/download" method="POST"><input type="hidden" name="dataUrl" id="dataUrl"/></form>
-  </body>
-  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+    
+    <div class="container">
+    
+      <!-- Main hero unit for a primary marketing message or call to action -->
+      <div class="hero-unit">
+        <div><input type="text" id="url"><button id="fetchImage">Fetch Image</button></div>
+        <div><button id="postImage">Post Image</button><button id="downloadImage">Download Image</button></div>
+        <div id="canvasContainer">
+            <canvas id="imageCanvas" style="z-index:1;"></canvas>
+            <canvas id="myCanvas" style="z-index:2;"></canvas>
+            <canvas id="destinationCanvas" style="z-index:3;visibility: hidden; "></canvas>
+        </div>
+        <form id="downloadForm" action="/download" method="POST"><input type="hidden" name="dataUrl" id="dataUrl"/></form>
+      </div>
+    
+      <!-- Example row of columns -->
+      <div class="row">
+        <div class="span4">
+          <h2>Heading</h2>
+          <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
+          <div class="progress progress-danger progress-striped active">
+            <div class="bar" style="width: 40%;"></div>
+          </div>
+          <p><a class="btn" href="#">View details &raquo;</a></p>
+        </div>
+        <div class="span4">
+          <h2>Heading</h2>
+           <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
+          <p><a class="btn" href="#">View details &raquo;</a></p>
+       </div>
+        <div class="span4">
+          <h2>Heading</h2>
+          <p>Donec sed odio dui. Cras justo odio, dapibus ac facilisis in, egestas eget quam. Vestibulum id ligula porta felis euismod semper. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus.</p>
+          <p><a class="btn" href="#">View details &raquo;</a></p>
+        </div>
+      </div>
+    
+      <hr>
+    
+      <footer>
+        <p>&copy; Memetix Devworx 2012</p>
+      </footer>
+    
+</div> 
   <script type="text/javascript" src="/scripts/spin.min.js"></script>
   <script type="text/javascript">
     $(document).ready(function() {
-    	initDrawingCanvas();
-		drawImage("<%= req.params.url %>");
-		$("#fetchImage").on('click', function() {
-			var url = $("#url").val();
-			if(url&&url.trim()!="") {
-				drawImage(url);
-			}
-		});
-		$("#postImage").on('click',function() {
-			var data = getImageDataUrl("image/png");
-		});
+        initDrawingCanvas();
+        drawImage("<%= req.params.url %>");
+        $("#fetchImage").on('click', function() {
+            var url = $("#url").val();
+            if(url&&url.trim()!="") {
+                drawImage(url);
+            }
+        });
+        $("#postImage").on('click',function() {
+            var data = getImageDataUrl("image/png");
+        });
         $("#downloadImage").on('click',function() {
             $("#canvasContainer").spin();
-			var data = getImageDataUrl("image/png");
+            var data = getImageDataUrl("image/png");
             $('#dataUrl').val(data);
             $("#canvasContainer").spin(false);
             $('#downloadForm').submit();
-		});
+        });
         $("canvas").on('selectstart',function() {
             return false;
         })
@@ -80,23 +126,23 @@
     }
 
     function drawImage(url) {
-		var imageObj = new Image();
+        var imageObj = new Image();
         var canvas = document.getElementById("imageCanvas");
         $("#canvasContainer").css('width',canvas.width);
         $("#canvasContainer").css('height',canvas.height);
         $("#canvasContainer").spin();
 
-		imageObj.onload = function() {
+        imageObj.onload = function() {
           canvas.width  = this.width;
           canvas.height = this.height;
-    	  var context = canvas.getContext("2d");
+          var context = canvas.getContext("2d");
           initDrawingCanvas(this.width,this.height);
-		  context.drawImage(imageObj, 0, 0);
+          context.drawImage(imageObj, 0, 0);
           $("#canvasContainer").css('width',canvas.width);
           $("#canvasContainer").css('height',canvas.height);
           $("#canvasContainer").spin(false);
           
-		};
+        };
         imageObj.src = "/image/" + encodeURIComponent(url);
     }
     function postImage() {
@@ -105,50 +151,50 @@
 
     //Drawing Code
     function initDrawingCanvas(width, height) {
-    	var canvas = document.getElementById("myCanvas");
-		var context = canvas.getContext("2d");
-		canvas.width  = width;
-		canvas.height = height;
+        var canvas = document.getElementById("myCanvas");
+        var context = canvas.getContext("2d");
+        canvas.width  = width;
+        canvas.height = height;
     }
     $('#myCanvas').mousedown(function(e){
         var offset = $(this).offset();
-  		var mouseX = e.pageX - offset.left;
-  		var mouseY = e.pageY - offset.top;
+        var mouseX = e.pageX - offset.left;
+        var mouseY = e.pageY - offset.top;
 
-  		paint = true;
-  		addClick(mouseX, mouseY);
-  		redraw();
-	});
+        paint = true;
+        addClick(mouseX, mouseY);
+        redraw();
+    });
 
-	$('#myCanvas').mousemove(function(e){
-  		if(paint){
+    $('#myCanvas').mousemove(function(e){
+        if(paint){
             var offset = $(this).offset();
-          	var mouseX = e.pageX - offset.left;
-      		var mouseY = e.pageY - offset.top;
-    		addClick(mouseX, mouseY, true);
-    		redraw();
-  		}
-	});
+            var mouseX = e.pageX - offset.left;
+            var mouseY = e.pageY - offset.top;
+            addClick(mouseX, mouseY, true);
+            redraw();
+        }
+    });
 
-	$('#myCanvas').mouseup(function(e){
-  		paint = false;
-	});
+    $('#myCanvas').mouseup(function(e){
+        paint = false;
+    });
 
-	$('#myCanvas').mouseleave(function(e){
-  		paint = false;
-	});
+    $('#myCanvas').mouseleave(function(e){
+        paint = false;
+    });
 
-	var clickX = new Array();
-	var clickY = new Array();
-	var clickDrag = new Array();
-	var paint;
+    var clickX = new Array();
+    var clickY = new Array();
+    var clickDrag = new Array();
+    var paint;
 
-	function addClick(x, y, dragging)
-	{
- 	 	clickX.push(x);
-  		clickY.push(y);
-  		clickDrag.push(dragging);
-	}
+    function addClick(x, y, dragging)
+    {
+        clickX.push(x);
+        clickY.push(y);
+        clickDrag.push(dragging);
+    }
 
 function redraw(){
   var canvas = document.getElementById("myCanvas");
@@ -173,4 +219,3 @@ function redraw(){
   }
 }
 </script>
-</html>
