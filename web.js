@@ -4,6 +4,7 @@ var url = require('url');
 var http = require('http');
 var https = require('https');
 var util    = require('util');
+var needle = require('needle');
 
 // create an express webserver
 var app = express.createServer(
@@ -88,9 +89,21 @@ function handle_facebook_request(req, res) {
       },
       function(cb) {
         // use fql to get a list of my friends that are using this app
-        req.facebook.get('/fql',{q:'SELECT owner, src_big, src_small, src FROM photo WHERE aid IN (SELECT aid FROM album WHERE owner in (SELECT uid2 FROM friend WHERE uid1=me()) ORDER BY modified_major desc) ORDER BY modified desc LIMIT 1,16'}, function(result) {
-          console.log(JSON.stringify(result));
-          req.friends_photos = result;
+        req.facebook.get('/fql',{q:'{' +
+                '"photos" : "SELECT owner, src_big, src_small, src FROM photo WHERE aid IN (SELECT aid FROM album WHERE owner in (SELECT uid2 FROM friend WHERE uid1=me()) ORDER BY modified desc) ORDER BY modified desc LIMIT 1,16",' +
+                '"users" : "SELECT name,id from profile WHERE id IN (SELECT owner FROM #photos)"' +
+            '}'}, function(result) {
+          var photos = result[0].fql_result_set;
+          var users = result[1].fql_result_set; 
+          photos.forEach(function(photo) {
+             users.forEach(function(user) {
+                if(user.id == photo.owner) {
+                    photo.user = user;   
+                }
+             });    
+          });
+          
+          req.friends_photos = photos;
           cb();
         });
       }
@@ -180,8 +193,32 @@ function handle_download_request(proxyReq,proxyResp) {
     }
 }
 
+function handle_upload_request(proxyReq,proxyResp) {
+    var imgData = proxyReq.body.dataUrl;
+    if(imgData) {
+        var dataBuffer = new Buffer(imgData.replace(/^data:image\/png;base64,/,""), 'base64');
+        var uploadUrl = 'https://graph.facebook.com/me/photos';
+        var data = {
+            message: 'Uploaded by D00dlr',
+            access_token: proxyReq.facebook.token,
+            source: { buffer: dataBuffer, filename: 'd00dlr_' + Date.now() + '.png', content_type: 'image/png' }
+        };
+
+        needle.post(uploadUrl, data, {multipart: true}, function(err, resp, body){
+                proxyResp.write(body);
+                proxyResp.end();
+        });
+        
+    } else {
+        proxyResp.writeHead(503);
+        proxyResp.write("Must provide image data!");
+        proxyResp.end();  
+    }
+}
+
 app.get('/', handle_facebook_request);
 app.post('/', handle_facebook_request);
 app.get('/draw/:url', handle_draw_request);
 app.post('/download', handle_download_request);
+app.post('/upload', handle_upload_request);
 app.get('/image/:url', handle_image_request);
