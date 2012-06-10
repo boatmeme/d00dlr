@@ -16,7 +16,7 @@ var app = express.createServer(
   require('faceplate').middleware({
     app_id: process.env.FACEBOOK_APP_ID || process.argv[2],
     secret: process.env.FACEBOOK_SECRET || process.argv[3],
-    scope:  'user_likes,user_photos,user_photo_video_tags'
+    scope:  'publish_actions,friends_photos,user_likes,user_photos,user_photo_video_tags,photo_upload,publish_stream,read_stream,status_update'
   })
 );
 
@@ -50,7 +50,7 @@ function render_page(req, res) {
   req.facebook.app(function(app) {
     req.facebook.me(function(user) {
       res.render('index.ejs', {
-        layout:    false,
+        layout:    true,
         req:       req,
         app:       app,
         user:      user
@@ -88,8 +88,9 @@ function handle_facebook_request(req, res) {
       },
       function(cb) {
         // use fql to get a list of my friends that are using this app
-        req.facebook.fql('SELECT uid, name, is_app_user, pic_square FROM user WHERE uid in (SELECT uid2 FROM friend WHERE uid1 = me()) AND is_app_user = 1', function(result) {
-          req.friends_using_app = result;
+        req.facebook.get('/fql',{q:'SELECT owner, src_big, src_small, src FROM photo WHERE aid IN (SELECT aid FROM album WHERE owner in (SELECT uid2 FROM friend WHERE uid1=me()) ORDER BY modified_major desc) ORDER BY modified desc LIMIT 1,16'}, function(result) {
+          console.log(JSON.stringify(result));
+          req.friends_photos = result;
           cb();
         });
       }
