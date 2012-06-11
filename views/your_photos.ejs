@@ -1,0 +1,7 @@
+<% req.photos.forEach(function(photo) { %>
+    <li class="span2">
+        <a href="/draw/<%= encodeURIComponent(photo.source) %>" class="thumbnail">
+            <img src="<%= photo.picture %>"/>
+        </a>
+      </li>
+  <% }); %>

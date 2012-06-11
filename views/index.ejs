@@ -90,30 +90,32 @@
       <% } %>
 </div>
  <% if (user) { %>
-    <div class="span12">
+    <div id="yourSpan" class="span12">
+            <script type="text/javascript">
+            $(document).ready(function() {
+                $("#yourSpan").spin();
+                $("#yourPhotos").load("/me/photos",function() {
+                     $("#yourSpan").spin(false);
+                } );
+            });
+        </script>
             <h1>Your photos</h1>
-            <ul class="thumbnails">
-              <% req.photos.forEach(function(photo) { %>
-                <li class="span2">
-                    <a href="/draw/<%= encodeURIComponent(photo.source) %>" class="thumbnail">
-                        <img src="<%= photo.picture %>"/>
-                    </a>
-                  </li>
-              <% }); %>
+            <ul id="yourPhotos" class="thumbnails">
+              
             </ul>
     </div>
-    <div class="span12">
+    <div id="friendSpan" class="span12">
+        <script type="text/javascript">
+            $(document).ready(function() {
+                $("#friendSpan").spin();
+                $("#friendPhotos").load("/friends/photos",function() {
+                     $("#friendSpan").spin(false);
+                } );
+            });
+        </script>
             <h1>Friends' photos</h1>
-            <ul class="thumbnails">
-              <% req.friends_photos.forEach(function(photo) { %>
-                <li class="span2">
-                    <a href="/draw/<%= encodeURIComponent(photo.src_big) %>" class="thumbnail">
-                        <img src="<%= photo.src %>"/>
-                        <%=photo.user.name%>
-                        <!--<img src="https://graph.facebook.com/<%= photo.owner %>/picture?type=square">-->
-                    </a>
-                  </li>
-              <% }); %>
+            <ul id="friendPhotos" class="thumbnails">
+              
             </ul>
     </div>
 <% } %>

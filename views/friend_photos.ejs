@@ -1,0 +1,9 @@
+<% req.friends_photos.forEach(function(photo) { %>
+    <li class="span2">
+        <a href="/draw/<%= encodeURIComponent(photo.src_big) %>" class="thumbnail">
+            <img src="<%= photo.src %>"/>
+            <%=photo.user.name%>
+            <!--<img src="https://graph.facebook.com/<%= photo.owner %>/picture?type=square">-->
+        </a>
+      </li>
+  <% }); %>

@@ -74,36 +74,9 @@ function handle_facebook_request(req, res) {
         });
       },
       function(cb) {
-        // query 16 photos and send them to the socket for this socket id
-        req.facebook.get('/me/photos', { limit: 16 }, function(photos) {
-          req.photos = photos;
-          cb();
-        });
-      },
-      function(cb) {
         // query 4 likes and send them to the socket for this socket id
         req.facebook.get('/me/likes', { limit: 4 }, function(likes) {
           req.likes = likes;
-          cb();
-        });
-      },
-      function(cb) {
-        // use fql to get a list of my friends that are using this app
-        req.facebook.get('/fql',{q:'{' +
-                '"photos" : "SELECT owner, src_big, src_small, src FROM photo WHERE aid IN (SELECT aid FROM album WHERE owner in (SELECT uid2 FROM friend WHERE uid1=me()) ORDER BY modified desc) ORDER BY modified desc LIMIT 1,16",' +
-                '"users" : "SELECT name,id from profile WHERE id IN (SELECT owner FROM #photos)"' +
-            '}'}, function(result) {
-          var photos = result[0].fql_result_set;
-          var users = result[1].fql_result_set; 
-          photos.forEach(function(photo) {
-             users.forEach(function(user) {
-                if(user.id == photo.owner) {
-                    photo.user = user;   
-                }
-             });    
-          });
-          
-          req.friends_photos = photos;
           cb();
         });
       }
@@ -199,14 +172,14 @@ function handle_upload_request(proxyReq,proxyResp) {
         var dataBuffer = new Buffer(imgData.replace(/^data:image\/png;base64,/,""), 'base64');
         var uploadUrl = 'https://graph.facebook.com/me/photos';
         var data = {
-            message: 'Uploaded by D00dlr',
+            message: proxyReq.body.messageText,
             access_token: proxyReq.facebook.token,
             source: { buffer: dataBuffer, filename: 'd00dlr_' + Date.now() + '.png', content_type: 'image/png' }
         };
-
-        needle.post(uploadUrl, data, {multipart: true}, function(err, resp, body){
-                proxyResp.write(body);
-                proxyResp.end();
+        
+        needle.post(uploadUrl, data, {multipart: true}, function(err, resp, body) {
+           proxyResp.write(body);
+           proxyResp.end();
         });
         
     } else {
@@ -216,7 +189,42 @@ function handle_upload_request(proxyReq,proxyResp) {
     }
 }
 
+function handle_friends_photos_request(req, res) {
+    // use fql to get a list of my friends that are using this app
+    req.facebook.get('/fql',{q:'{' +
+            '"photos" : "SELECT owner, src_big, src_small, src FROM photo WHERE aid IN (SELECT aid FROM album WHERE owner in (SELECT uid2 FROM friend WHERE uid1=me()) ORDER BY modified desc) ORDER BY modified desc LIMIT 1,16",' +
+            '"users" : "SELECT name,id from profile WHERE id IN (SELECT owner FROM #photos)"' +
+        '}'}, function(result) {
+              var photos = result[0].fql_result_set;
+              var users = result[1].fql_result_set; 
+              photos.forEach(function(photo) {
+                 users.forEach(function(user) {
+                    if(user.id == photo.owner) {
+                        photo.user = user;   
+                    }
+                 });    
+             });
+          req.friends_photos = photos;
+          res.render('friend_photos.ejs', {
+            layout:    false,
+            req:       req
+          });
+    });    
+}
+
+function handle_your_photos_request(req,res) {
+    req.facebook.get('/me/photos', { limit: 16 }, function(photos) {
+        req.photos = photos;
+        res.render('your_photos.ejs', {
+            layout:    false,
+            req:       req
+        });
+    });
+}
+
 app.get('/', handle_facebook_request);
+app.get('/me/photos', handle_your_photos_request);
+app.get('/friends/photos', handle_friends_photos_request);
 app.post('/', handle_facebook_request);
 app.get('/draw/:url', handle_draw_request);
 app.post('/download', handle_download_request);
