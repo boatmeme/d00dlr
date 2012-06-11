@@ -8,19 +8,9 @@
                 cursor:pointer;
             }
             #canvasContainer {
-                position:relative;
-            }
-            #imageCanvas {
-                position:absolute;
-                top:0px;
-                left:0px;
-                border: 2px solid #9C9898;
-            }
-            #myCanvas {
-                position:absolute;
-                top:0px;
-                left:0px;
-                border: 2px solid #9C9898;
+                border:1px solid black;
+                width:200px;
+                height:200px;
             }
     </style>
 <div class="row-fluid">
@@ -106,9 +96,6 @@
 <div class="span10">
         
         <div id="canvasContainer">
-            <canvas id="imageCanvas" style="z-index:1;"></canvas>
-            <canvas id="myCanvas" style="z-index:2;"></canvas>
-            <canvas id="destinationCanvas" style="z-index:3;visibility: hidden; "></canvas>
         </div>
 </div>
 <script type="text/javascript">

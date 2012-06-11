@@ -1,14 +1,19 @@
+var stage,lastPos,currentLayer,imageObj;
+
+var undo = [];
+var redo = [];
+
 $(document).ready(function() {
     initDrawingCanvas();
     $("#canvasContainer").spin();
-
-    drawImage(startUrl, function() {});
+    loadImage(startUrl, function() {});
 
     $("#fetchImage").on('click', function() {
         var url = $("#url").val();
         var _self = this;
         if(url&&url.trim()!="") {
              $(_self).button('loading');
+            stage.clear();
             drawImage(url, function(success) {
                 $(_self).button('reset');
                 $('#loadModal').modal('hide');
@@ -16,61 +21,79 @@ $(document).ready(function() {
         } else {
             $('#loadModal').modal('hide');
         }
+        return false;
     });
 
     $("#postImage").on('click',function() {
         $("#canvasContainer").spin();
         $(this).button('loading');
-        var data = getImageDataUrl("image/png");
-        $('#dataUrlUpload').val(data);
-        $("#canvasContainer").spin(false);
-        $(this).button('reset');
-        $('#uploadForm').submit();
+        drawImage(imageObj);
+        stage.toDataURL(function(data) {
+            clearImage();
+            $('#dataUrlUpload').val(data);
+            $("#canvasContainer").spin(false);
+            $("#postImage").button('reset');
+            $('#uploadForm').submit();
+        });
+        return false;
     });
 
     $("#downloadImage").on('click',function() {
         $(this).button('loading');
         $("#canvasContainer").spin();
-        var data = getImageDataUrl("image/png");
-        $('#dataUrl').val(data);
-        $("#canvasContainer").spin(false);
-        $(this).button('reset');
-        $('#downloadForm').submit();
+        drawImage(imageObj);
+        stage.toDataURL(function(data) {
+            $('#dataUrl').val(data);
+            clearImage();
+            $("#canvasContainer").spin(false);
+            $("#downloadImage").button('reset');
+            $('#downloadForm').submit();
+        });
+        return false;
+    });
+    
+    $(document).keydown(function(e){
+        if (e.keyCode==90 && e.ctrlKey && !e.shiftKey) {
+            doUndo();
+        } else if (e.keyCode==89 && e.ctrlKey) {
+            doRedo(); 
+        } else if (e.keyCode==90 && e.ctrlKey && e.shiftKey) {
+            doRedo();   
+        }
     });
 
     $("canvas").on('selectstart',function() {
         return false;
-    })
+    });
 });
 
-function getImageDataUrl(type) {
-    var destCanvas = document.getElementById("destinationCanvas");
-    var destCtx = destCanvas.getContext('2d');
-
-    var canvas1 = document.getElementById("imageCanvas");
-    var canvas2 = document.getElementById("myCanvas");
-    destCanvas.width  = canvas2.width;
-    destCanvas.height = canvas2.height;
-    destCtx.drawImage(canvas1,0,0);
-    destCtx.drawImage(canvas2,0,0);
-    return destCanvas.toDataURL(type);
+function doUndo() {
+    var previousState = undo.shift();
+    if(previousState) {
+        redo.unshift(stage.toJSON());
+        stage.load(previousState);
+        //drawImage(imageObj);
+    }  
 }
 
-function drawImage(url,cb) {
-    var imageObj = new Image();
-    var canvas = document.getElementById("imageCanvas");
-    $("#canvasContainer").css('width',canvas.width);
-    $("#canvasContainer").css('height',canvas.height);
-    $("#canvasContainer").spin();
+function doRedo() {
+    var previousState = redo.shift();
+    if(previousState) {
+        undo.unshift(stage.toJSON());
+        stage.load(previousState);
+        //drawImage(imageObj);
+    }   
+}
+
+function loadImage(url,cb) {
+    imageObj = new Image();
 
     imageObj.onload = function() {
-      canvas.width  = this.width;
-      canvas.height = this.height;
-      var context = canvas.getContext("2d");
-      initDrawingCanvas(this.width,this.height);
-      context.drawImage(imageObj, 0, 0);
-      $("#canvasContainer").css('width',canvas.width);
-      $("#canvasContainer").css('height',canvas.height);
+      //drawImage(this);
+      stage.setSize(this.width, this.height);
+      $("#canvasContainer").css('width',this.width);
+      $("#canvasContainer").css('height',this.height);
+      $('#canvasContainer').css("background-image", "url(" + url + ")");  
       $("#canvasContainer").spin(false);
       cb(true);
     };
@@ -81,76 +104,82 @@ function drawImage(url,cb) {
     };
     imageObj.src = "/image/" + encodeURIComponent(url);
 }
+
+function drawImage(img) {
+    var baseLayer = stage.get("#baseLayer")[0];
+    
+    var image = new Kinetic.Image({
+        x: 0,
+        y: 0,
+        image: img,
+        width: img.width,
+        height: img.height
+    });
+    baseLayer.width = img.width;
+    baseLayer.height = img.height;
+    
+    // add the shape to the layer
+    baseLayer.add(image);
+    baseLayer.draw(); 
+}
+
+function clearImage() {
+    var baseLayer = stage.get("#baseLayer")[0];
+    baseLayer.clear();
+}
+
 function postImage() {
 
 }
 
 //Drawing Code
 function initDrawingCanvas(width, height) {
-    var canvas = document.getElementById("myCanvas");
-    var context = canvas.getContext("2d");
-    canvas.width  = width;
-    canvas.height = height;
+    stage = new Kinetic.Stage({
+      container: "canvasContainer",
+      width: 200,
+      height: 200
+    });
+    stage.add(new Kinetic.Layer({id: "baseLayer"}));
 }
-$('#myCanvas').mousedown(function(e){
-    var offset = $(this).offset();
-    var mouseX = e.pageX - offset.left;
-    var mouseY = e.pageY - offset.top;
 
+var paint;
+
+$("#canvasContainer").on('mousedown',function(e){
+    undo.unshift(stage.toJSON());
+    redo = [];
+    var pos = stage.getUserPosition(e);
+    currentLayer = new Kinetic.Layer({id: "drawingLayer"}); 
+    stage.add(currentLayer);
+    lastPos = pos;
     paint = true;
-    addClick(mouseX, mouseY);
-    redraw();
+    addClick(pos);
 });
 
-$('#myCanvas').mousemove(function(e){
+$("#canvasContainer").on('mousemove', function(e){
     if(paint){
-        var offset = $(this).offset();
-        var mouseX = e.pageX - offset.left;
-        var mouseY = e.pageY - offset.top;
-        addClick(mouseX, mouseY, true);
-        redraw();
+        var pos = stage.getUserPosition(e);
+        addClick(pos);
     }
 });
 
-$('#myCanvas').mouseup(function(e){
+$("#canvasContainer").on('mouseup',function(e){
+    paint = false;   
+});
+
+$("#canvasContainer").on('mouseleave',function(e){
     paint = false;
 });
 
-$('#myCanvas').mouseleave(function(e){
-    paint = false;
-});
-
-var clickX = new Array();
-var clickY = new Array();
-var clickDrag = new Array();
-var paint;
-
-function addClick(x, y, dragging)
+function addClick(currentPos)
 {
-    clickX.push(x);
-    clickY.push(y);
-    clickDrag.push(dragging);
-}
-
-function redraw(){
-  var canvas = document.getElementById("myCanvas");
-  var context = canvas.getContext("2d");
-  canvas.width = canvas.width; // Clears the canvas
-
-  context.strokeStyle = "#df4b26";
-  context.lineJoin = "round";
-  context.lineWidth = 5;
-
-  for(var i=0; i < clickX.length; i++)
-  {
-    context.beginPath();
-    if(clickDrag[i] && i){
-      context.moveTo(clickX[i-1], clickY[i-1]);
-     }else{
-       context.moveTo(clickX[i]-1, clickY[i]);
-     }
-     context.lineTo(clickX[i], clickY[i]);
-     context.closePath();
-     context.stroke();
-  }
+    var line = new Kinetic.Line({
+      points: [lastPos.x,lastPos.y, currentPos.x, currentPos.y],
+      stroke: "black",
+      strokeWidth: 4,
+      lineCap: "round",
+      lineJoin: "round"
+    });
+    currentLayer.add(line);
+    currentLayer.draw();
+    lastPos = currentPos;
 }
