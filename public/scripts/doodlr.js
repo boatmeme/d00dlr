@@ -160,6 +160,7 @@ function drawImage(img) {
 
 function clearImage() {
     var baseLayer = stage.get("#baseLayer")[0];
+    baseLayer.removeChildren();
     baseLayer.clear();
 }
 
@@ -215,7 +216,21 @@ var paintTool = {
 
 var dropperTool = {
     onMouseDown: function(e) {
-        console.log(stage.getUserPosition(e));
+        var pos = stage.getUserPosition(e);
+        drawImage(imageObj);
+        var shapes = stage.getIntersections(pos);
+        if(shapes.length>0) {
+            var imgData = shapes[0].getLayer.getCanvas().getContext("2d").getImageData(pos.x,pos.y,1,1);
+            var red = imgData.data[0];
+            var green = imgData.data[1];
+            var blue = imgData.data[2];
+            var alpha = imgData.data[3]/255;
+            
+            paintColor = "rgba(" + red + "," + green + "," + blue + "," + alpha+ ")";
+            $("#colorpicker").data('color',paintColor);
+            $("#colorpicker").data('colorpicker').update();
+        }
+        clearImage();
     },
     onMouseMove: function(e) {
         
@@ -229,10 +244,10 @@ var dropperTool = {
 }
 currentTool = paintTool;
 
-$("#canvasContainer").on('mousedown',currentTool.onMouseDown);
+$("#canvasContainer").on('mousedown',function(e) {currentTool.onMouseDown(e)});
 
-$("#canvasContainer").on('mousemove',currentTool.onMouseMove);
+$("#canvasContainer").on('mousemove',function(e) {currentTool.onMouseMove(e)});
 
-$("#canvasContainer").on('mouseup',currentTool.onMouseUp);
+$("#canvasContainer").on('mouseup',function(e) {currentTool.onMouseUp(e)});
 
-$("#canvasContainer").on('mouseleave',currentTool.onMouseLeave);
+$("#canvasContainer").on('mouseleave',function(e) {currentTool.onMouseLeave(e)});
