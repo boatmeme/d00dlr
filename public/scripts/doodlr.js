@@ -73,7 +73,8 @@ $(document).ready(function() {
     });
     
     $("#filter").on('change',function() {
-       applyFilter($("#image").get(0),$(this).val(),{});
+       var option = this.options[this.selectedIndex];
+       applyFilter($("#image").get(0),$(this).val(),JSON.parse(option.getAttribute('data-opts')));
     });
 });
 
@@ -99,8 +100,15 @@ function applyFilter(image, filter, opts) {
     if(filter == "revert") {
         Pixastic.revert(image);
     } else {
-        Pixastic.process(image, filter, opts);
+        $("#imageContainer").spin();
+        Pixastic.process(image, filter, opts, function(){
+            $("#imageContainer").spin(false);
+        });
     }
+}
+
+function getPixel(e) {
+  var imgdata = c.getImageData( x, y, 1, 1 );     
 }
 
 function loadImage(url,cb) {

@@ -47,18 +47,23 @@
         <label class="control-label" for="filter">Filter</label>
         <div class="controls">
           <select id="filter">
-            <option selected="true" value="revert">No Filter</option>
-            <option value="desaturate">Greyscale</option>
-            <option value="sepia">Sepia</option>
+            <option selected="true" value="revert" data-opts="{}">No Filter</option>
+            <option value="desaturate" data-opts="{}">Greyscale</option>
+            <option value="sepia" data-opts="{}">Sepia</option>
+            <option value="sharpen" data-opts="{}">Sharpen</option>
+            <option value="fliph" data-opts="{}">Flip (Horizontal)</option>
+            <option value="flipv" data-opts="{}">Flip (Vertical)</option>
+            <option value="invert" data-opts="{}">Invert</option>
+            <option value="pointillize" data-opts='{"radius":3, "density":1.5, "noise":1.0, "transparent":false}'>Paint</option>
+            <option value="mosaic" data-opts='{"blockSize":4}'>Pixelate</option>
           </select>
+            <label class="control-label" for="colorpicker">Stroke Color</label>
+            <div class="input-append color" data-color="rgba(0, 0, 0,1.0)" data-color-format="rgba" id="colorpicker">
+              <span class="add-on"><i style="background-color: rgba(0, 0, 0,1.0)"></i></span>
+            </div>
         </div>
 </div>
 
-<p> Stroke
-    <div class="input-append color" data-color="rgba(0, 0, 0,1.0)" data-color-format="rgba" id="colorpicker">
-      <span class="add-on"><i style="background-color: rgba(0, 0, 0,1.0)"></i></span>
-    </div>
-</p>
 
 <div class="modal hide fade" id="loadModal">
   <div class="modal-header">
