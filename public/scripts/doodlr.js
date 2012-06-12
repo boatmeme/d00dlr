@@ -1,4 +1,4 @@
-var stage,lastPos,currentLayer,imageObj;
+var stage,currentTool,currentLayer,imageObj;
 
 var undo = [];
 var redo = [];
@@ -75,6 +75,13 @@ $(document).ready(function() {
     $("#filter").on('change',function() {
        var option = this.options[this.selectedIndex];
        applyFilter($("#image").get(0),$(this).val(),JSON.parse(option.getAttribute('data-opts')));
+    });
+    
+    $("#dropperTool").on('click',function() { 
+         currentTool = dropperTool;
+    });
+    $("#paintTool").on('click',function() { 
+         currentTool = paintTool;
     });
 });
 
@@ -170,45 +177,62 @@ function initDrawingCanvas(width, height) {
     stage.add(new Kinetic.Layer({id: "baseLayer"}));
 }
 
-var paint;
-
-$("#canvasContainer").on('mousedown',function(e){
-    undo.unshift(stage.toJSON());
-    redo = [];
-    var pos = stage.getUserPosition(e);
-    currentLayer = new Kinetic.Layer({id: "drawingLayer"}); 
-    stage.add(currentLayer);
-    lastPos = pos;
-    paint = true;
-    //addClick(pos);
-});
-
-$("#canvasContainer").on('mousemove', function(e){
-    if(paint){
+var paintTool = {
+    lastPos: null,
+    paint: false,
+    onMouseDown: function(e) {
+        undo.unshift(stage.toJSON());
+        redo = [];
         var pos = stage.getUserPosition(e);
-        addClick(pos);
+        currentLayer = new Kinetic.Layer({id: "drawingLayer"}); 
+        stage.add(currentLayer);
+        this.lastPos = pos;
+        this.paint = true;
+    },
+    onMouseMove: function(e) {
+        if(this.paint){
+            var currentPos = stage.getUserPosition(e);
+            var strokeWidth = 12;
+            var line = new Kinetic.Line({
+              points: [this.lastPos.x,this.lastPos.y, currentPos.x, currentPos.y],
+              stroke: paintColor,
+              strokeWidth: strokeWidth,
+              lineCap: "round",
+              lineJoin: "round"
+            });
+            currentLayer.add(line);
+            currentLayer.draw();
+            this.lastPos = currentPos;
+        }
+    },
+    onMouseUp: function(e) {
+        this.paint = false;   
+    }, 
+    onMouseLeave: function(e) {
+        this.paint = false;   
     }
-});
-
-$("#canvasContainer").on('mouseup',function(e){
-    paint = false;   
-});
-
-$("#canvasContainer").on('mouseleave',function(e){
-    paint = false;
-});
-
-function addClick(currentPos)
-{
-    var strokeWidth = 12;
-    var line = new Kinetic.Line({
-      points: [lastPos.x,lastPos.y, currentPos.x, currentPos.y],
-      stroke: paintColor,
-      strokeWidth: strokeWidth,
-      lineCap: "round",
-      lineJoin: "round"
-    });
-    currentLayer.add(line);
-    currentLayer.draw();
-    lastPos = currentPos;
 }
+
+var dropperTool = {
+    onMouseDown: function(e) {
+        console.log(stage.getUserPosition(e));
+    },
+    onMouseMove: function(e) {
+        
+    },
+    onMouseUp: function(e) {
+        
+    }, 
+    onMouseLeave: function(e) {
+       
+    }
+}
+currentTool = paintTool;
+
+$("#canvasContainer").on('mousedown',currentTool.onMouseDown);
+
+$("#canvasContainer").on('mousemove',currentTool.onMouseMove);
+
+$("#canvasContainer").on('mouseup',currentTool.onMouseUp);
+
+$("#canvasContainer").on('mouseleave',currentTool.onMouseLeave);
