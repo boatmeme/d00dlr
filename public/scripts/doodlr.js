@@ -220,7 +220,7 @@ var dropperTool = {
         drawImage(imageObj);
         var shapes = stage.getIntersections(pos);
         if(shapes.length>0) {
-            var imgData = shapes[0].getLayer.getCanvas().getContext("2d").getImageData(pos.x,pos.y,1,1);
+            var imgData = shapes[0].getLayer().getCanvas().getContext("2d").getImageData(pos.x,pos.y,1,1);
             var red = imgData.data[0];
             var green = imgData.data[1];
             var blue = imgData.data[2];

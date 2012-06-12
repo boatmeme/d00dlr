@@ -14,7 +14,7 @@ ERR!     <npm-@googlegroups.com>
 ERR! 
 ERR! System SunOS 5.11
 ERR! command "/shared/software/c9/support/node-c9-builds/bin/node-sunos-v0.6.18-security" "/shared/users/$bo/boatmeme/npm/bin/npm-cli.js"
-ERR! cwd /shared/users/$bo/boatmeme/195209
+ERR! cwd /shared/users/$bo/boatmeme/199759
 ERR! node -v v0.6.18
 ERR! npm -v 1.0.106
 ERR! path /shared/users/$bo/boatmeme/npm/man/man1/
