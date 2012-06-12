@@ -2,6 +2,7 @@ var stage,lastPos,currentLayer,imageObj;
 
 var undo = [];
 var redo = [];
+var paintColor = "rgba(0, 0, 0, 1.0)";
 
 $(document).ready(function() {
     initDrawingCanvas();
@@ -52,6 +53,11 @@ $(document).ready(function() {
         return false;
     });
     
+    $('#colorpicker').colorpicker().on('changeColor', function(ev){
+        var color = ev.color.toRGB();
+        paintColor = "rgba(" + color.r +"," + color.g + "," + color.b + "," + color.a + ")";
+	});
+    
     $(document).keydown(function(e){
         if (e.keyCode==90 && e.ctrlKey && !e.shiftKey) {
             doUndo();
@@ -64,6 +70,10 @@ $(document).ready(function() {
 
     $("canvas").on('selectstart',function() {
         return false;
+    });
+    
+    $("#filter").on('change',function() {
+       applyFilter($("#image").get(0),$(this).val(),{});
     });
 });
 
@@ -85,15 +95,25 @@ function doRedo() {
     }   
 }
 
+function applyFilter(image, filter, opts) {
+    if(filter == "revert") {
+        Pixastic.revert(image);
+    } else {
+        Pixastic.process(image, filter, opts);
+    }
+}
+
 function loadImage(url,cb) {
     imageObj = new Image();
+    $(imageObj).attr('id','image');
 
     imageObj.onload = function() {
       //drawImage(this);
       stage.setSize(this.width, this.height);
       $("#canvasContainer").css('width',this.width);
       $("#canvasContainer").css('height',this.height);
-      $('#canvasContainer').css("background-image", "url(" + url + ")");  
+      $("#imageContainer").empty();
+      $("#imageContainer").append(this);
       $("#canvasContainer").spin(false);
       cb(true);
     };
@@ -111,7 +131,7 @@ function drawImage(img) {
     var image = new Kinetic.Image({
         x: 0,
         y: 0,
-        image: img,
+        image: $("#image").get(0),
         width: img.width,
         height: img.height
     });
@@ -152,7 +172,7 @@ $("#canvasContainer").on('mousedown',function(e){
     stage.add(currentLayer);
     lastPos = pos;
     paint = true;
-    addClick(pos);
+    //addClick(pos);
 });
 
 $("#canvasContainer").on('mousemove', function(e){
@@ -172,10 +192,11 @@ $("#canvasContainer").on('mouseleave',function(e){
 
 function addClick(currentPos)
 {
+    var strokeWidth = 12;
     var line = new Kinetic.Line({
       points: [lastPos.x,lastPos.y, currentPos.x, currentPos.y],
-      stroke: "black",
-      strokeWidth: 4,
+      stroke: paintColor,
+      strokeWidth: strokeWidth,
       lineCap: "round",
       lineJoin: "round"
     });

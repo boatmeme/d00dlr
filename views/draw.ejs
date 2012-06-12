@@ -11,11 +11,16 @@
                 border:1px solid black;
                 width:200px;
                 height:200px;
+                position:relative;
+            }
+            #imageContainer {
+                position:absolute;
+                top:0px;
+                left:0px;
             }
     </style>
 <div class="row-fluid">
 <div class="span2">
-
 
 <p>
     <div>
@@ -35,6 +40,23 @@
     <div><a class="btn btn-large" data-toggle="modal" href="#loadModal" >
         <i class="icon-file"></i>
         Load Image</a>
+    </div>
+</p>
+
+<div class="control-group">
+        <label class="control-label" for="filter">Filter</label>
+        <div class="controls">
+          <select id="filter">
+            <option selected="true" value="revert">No Filter</option>
+            <option value="desaturate">Greyscale</option>
+            <option value="sepia">Sepia</option>
+          </select>
+        </div>
+</div>
+
+<p> Stroke
+    <div class="input-append color" data-color="rgba(0, 0, 0,1.0)" data-color-format="rgba" id="colorpicker">
+      <span class="add-on"><i style="background-color: rgba(0, 0, 0,1.0)"></i></span>
     </div>
 </p>
 
@@ -96,12 +118,15 @@
 <div class="span10">
         
         <div id="canvasContainer">
+            <div id="imageContainer"></div>
         </div>
 </div>
 <script type="text/javascript">
     var startUrl = "<%= req.params.url%>";
 </script>
 </script>
- <script type="text/javascript" src="/scripts/kinetic-v3.9.8.min.js"></script>
+<script type="text/javascript" src="/scripts/kinetic-v3.9.8.min.js"></script>
+<script src="/js/bootstrap-colorpicker.js"></script>
+<script src="/js/pixtastic.min.js"></script>
 <script type="text/javascript" src="/scripts/doodlr.js"></script>
   
