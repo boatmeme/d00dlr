@@ -83,6 +83,9 @@ $(document).ready(function() {
     $("#paintTool").on('click',function() { 
          currentTool = paintTool;
     });
+    $("#eraseTool").on('click',function() { 
+         currentTool = eraserTool;
+    });
 });
 
 function doUndo() {
@@ -255,6 +258,28 @@ var dropperTool = {
         });
     }
 }
+
+var eraserTool = {
+    onMouseDown: function(e) {
+        
+    },
+    onMouseMove: function(e) {
+        
+    },
+    onMouseUp: function(e) {
+        
+    }, 
+    onMouseLeave: function(e) {
+        $('#canvasContainer').removeClass("eraser");
+    },
+    onMouseEnter: function(e) {
+        $('#canvasContainer').addClass("eraser");
+        $("#canvasContainer").on('selectstart',function() {
+            return false;
+        });
+    }
+}
+
 currentTool = paintTool;
 
 $("#canvasContainer").on('mousedown',function(e) {currentTool.onMouseDown(e)});
