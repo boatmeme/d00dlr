@@ -68,7 +68,7 @@ $(document).ready(function() {
         }
     });
 
-    $("canvas").on('selectstart',function() {
+    $("#canvasContainer").on('selectstart',function() {
         return false;
     });
     
@@ -210,7 +210,14 @@ var paintTool = {
         this.paint = false;   
     }, 
     onMouseLeave: function(e) {
-        this.paint = false;   
+        this.paint = false;  
+        $('#canvasContainer').removeClass("brush");
+    },
+    onMouseEnter: function(e) {
+        $('#canvasContainer').addClass("brush");
+        $("#canvasContainer").on('selectstart',function() {
+            return false;
+        });
     }
 }
 
@@ -239,7 +246,13 @@ var dropperTool = {
         
     }, 
     onMouseLeave: function(e) {
-       
+        $('#canvasContainer').removeClass("dropper");
+    },
+    onMouseEnter: function(e) {
+        $('#canvasContainer').addClass("dropper");
+        $("#canvasContainer").on('selectstart',function() {
+            return false;
+        });
     }
 }
 currentTool = paintTool;
@@ -251,3 +264,5 @@ $("#canvasContainer").on('mousemove',function(e) {currentTool.onMouseMove(e)});
 $("#canvasContainer").on('mouseup',function(e) {currentTool.onMouseUp(e)});
 
 $("#canvasContainer").on('mouseleave',function(e) {currentTool.onMouseLeave(e)});
+
+$("#canvasContainer").on('mouseenter',function(e) {currentTool.onMouseEnter(e)});
