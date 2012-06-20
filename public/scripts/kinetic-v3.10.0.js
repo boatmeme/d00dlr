@@ -2792,7 +2792,8 @@ Kinetic.Shape = function(config) {
                 x: 0,
                 y: 0
             }
-        }
+        },
+        globalCompositeOperation: 'source-over'
     });
 
     this.data = [];
@@ -3105,6 +3106,7 @@ Kinetic.Shape.prototype = {
         if(layer !== undefined && this.attrs.drawFunc !== undefined) {
             var stage = layer.getStage();
             var context = layer.getContext();
+            context.globalCompositeOperation = this.attrs.globalCompositeOperation;
             var family = [];
             var parent = this.parent;
 
@@ -3149,8 +3151,8 @@ Kinetic.Shape.prototype = {
 Kinetic.GlobalObject.extend(Kinetic.Shape, Kinetic.Node);
 
 // add setters and getters
-Kinetic.GlobalObject.addSetters(Kinetic.Shape, ['fill', 'stroke', 'lineJoin', 'strokeWidth', 'shadow', 'drawFunc']);
-Kinetic.GlobalObject.addGetters(Kinetic.Shape, ['fill', 'stroke', 'lineJoin', 'strokeWidth', 'shadow', 'drawFunc']);
+Kinetic.GlobalObject.addSetters(Kinetic.Shape, ['fill', 'stroke', 'lineJoin', 'strokeWidth', 'shadow', 'drawFunc', 'globalCompositeOperation']);
+Kinetic.GlobalObject.addGetters(Kinetic.Shape, ['fill', 'stroke', 'lineJoin', 'strokeWidth', 'shadow', 'drawFunc', 'globalCompositeOperation']);
 
 /**
  * set fill which can be a color, linear gradient object,

@@ -256,16 +256,39 @@ var dropperTool = {
 }
 
 var eraserTool = {
+    lastPos: null,
+    paint: false,
     onMouseDown: function(e) {
         $('#canvasContainer').addClass("eraser");
+        undo.unshift(stage.toJSON());
+        redo = [];
+        var pos = stage.getUserPosition(e);
+        this.lastPos = pos;
+        this.paint = true;
     },
     onMouseMove: function(e) {
-        
+        if(this.paint){
+            var currentPos = stage.getUserPosition(e);
+            var layer = stage.get("#drawingLayer")[0];
+            var strokeWidth = 12;
+            var line = new Kinetic.Line({
+              points: [this.lastPos.x,this.lastPos.y, currentPos.x, currentPos.y],
+              stroke: paintColor,
+              strokeWidth: strokeWidth,
+              globalCompositeOperation: 'destination-out',
+              lineCap: "round",
+              lineJoin: "round"
+            });
+            layer.add(line);
+            layer.draw();
+            this.lastPos = currentPos;
+        }
     },
     onMouseUp: function(e) {
-        
+        this.paint = false;
     }, 
     onMouseLeave: function(e) {
+        this.paint = false;  
         $('#canvasContainer').removeClass("eraser");
     },
     onMouseEnter: function(e) {
