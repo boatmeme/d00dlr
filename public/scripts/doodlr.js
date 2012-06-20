@@ -227,14 +227,25 @@ var dropperTool = {
         $('#canvasContainer').addClass("dropper");
         var pos = stage.getUserPosition(e);
         drawImage(imageObj);
-        var shapes = stage.getIntersections(pos);
-        if(shapes.length>0) {
-            var imgData = shapes[0].getLayer().getCanvas().getContext("2d").getImageData(pos.x,pos.y,1,1);
+        var layer = stage.get("#drawingLayer")[0];
+        if(layer) {
+            var imgData = layer.getCanvas().getContext("2d").getImageData(pos.x,pos.y,1,1);
             var red = imgData.data[0];
             var green = imgData.data[1];
             var blue = imgData.data[2];
             var alpha = imgData.data[3]/255;
             
+            // If there are no lines on this layer, then get the baseLayer context, containing the image
+            if(red==0&&green==0&&blue==0&&alpha==0) {
+                layer = stage.get("#baseLayer")[0];
+                if(layer) {
+                    imgData = layer.getCanvas().getContext("2d").getImageData(pos.x,pos.y,1,1);
+                    red = imgData.data[0];
+                    green = imgData.data[1];
+                    blue = imgData.data[2];
+                    alpha = imgData.data[3]/255;
+                }
+            }            
             paintColor = "rgba(" + red + "," + green + "," + blue + "," + alpha+ ")";
             $("#colorpicker").data('color',paintColor);
             $("#colorpicker").data('colorpicker').update();
@@ -273,7 +284,6 @@ var eraserTool = {
             var strokeWidth = 12;
             var line = new Kinetic.Line({
               points: [this.lastPos.x,this.lastPos.y, currentPos.x, currentPos.y],
-              stroke: paintColor,
               strokeWidth: strokeWidth,
               globalCompositeOperation: 'destination-out',
               lineCap: "round",
