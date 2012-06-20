@@ -1,4 +1,4 @@
-var stage,currentTool,currentLayer,imageObj;
+var stage,currentTool,imageObj;
 
 var undo = [];
 var redo = [];
@@ -178,24 +178,25 @@ function initDrawingCanvas(width, height) {
       width: 200,
       height: 200
     });
-    stage.add(new Kinetic.Layer({id: "baseLayer"}));
+    stage.add(new Kinetic.Layer({id: "baseLayer"})); 
+    stage.add(new Kinetic.Layer({id: "drawingLayer"}));
 }
 
 var paintTool = {
     lastPos: null,
     paint: false,
     onMouseDown: function(e) {
+        $('#canvasContainer').addClass("dropper");
         undo.unshift(stage.toJSON());
         redo = [];
         var pos = stage.getUserPosition(e);
-        currentLayer = new Kinetic.Layer({id: "drawingLayer"}); 
-        stage.add(currentLayer);
         this.lastPos = pos;
         this.paint = true;
     },
     onMouseMove: function(e) {
         if(this.paint){
             var currentPos = stage.getUserPosition(e);
+            var layer = stage.get("#drawingLayer")[0];
             var strokeWidth = 12;
             var line = new Kinetic.Line({
               points: [this.lastPos.x,this.lastPos.y, currentPos.x, currentPos.y],
@@ -204,13 +205,13 @@ var paintTool = {
               lineCap: "round",
               lineJoin: "round"
             });
-            currentLayer.add(line);
-            currentLayer.draw();
+            layer.add(line);
+            layer.draw();
             this.lastPos = currentPos;
         }
     },
     onMouseUp: function(e) {
-        this.paint = false;   
+        this.paint = false;
     }, 
     onMouseLeave: function(e) {
         this.paint = false;  
@@ -218,14 +219,12 @@ var paintTool = {
     },
     onMouseEnter: function(e) {
         $('#canvasContainer').addClass("brush");
-        $("#canvasContainer").on('selectstart',function() {
-            return false;
-        });
     }
 }
 
 var dropperTool = {
     onMouseDown: function(e) {
+        $('#canvasContainer').addClass("dropper");
         var pos = stage.getUserPosition(e);
         drawImage(imageObj);
         var shapes = stage.getIntersections(pos);
@@ -253,15 +252,12 @@ var dropperTool = {
     },
     onMouseEnter: function(e) {
         $('#canvasContainer').addClass("dropper");
-        $("#canvasContainer").on('selectstart',function() {
-            return false;
-        });
     }
 }
 
 var eraserTool = {
     onMouseDown: function(e) {
-        
+        $('#canvasContainer').addClass("eraser");
     },
     onMouseMove: function(e) {
         
@@ -274,9 +270,6 @@ var eraserTool = {
     },
     onMouseEnter: function(e) {
         $('#canvasContainer').addClass("eraser");
-        $("#canvasContainer").on('selectstart',function() {
-            return false;
-        });
     }
 }
 

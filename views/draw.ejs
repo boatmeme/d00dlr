@@ -4,19 +4,35 @@
               height: 100%;
               margin: 0px;
             }
-            canvas:active, canvas:focus {
-                cursor:pointer;
+            canvas {
+                -webkit-user-select: none;
+                -mozilla-user-select: none;
+                -khtml-user-select: none;
+                user-select:none;
+                -ms-user-select:none;
             }
             #canvasContainer {
                 border:1px solid black;
                 width:200px;
                 height:200px;
                 position:relative;
+                -webkit-user-select: none;
+                -mozilla-user-select: none;
+                -khtml-user-select: none;
+                user-select:none;
+                -ms-user-select:none;
             }
             #imageContainer {
                 position:absolute;
                 top:0px;
                 left:0px;
+            }
+            #colorPicker {
+                -webkit-user-select: none;
+                -mozilla-user-select: none;
+                -khtml-user-select: none;
+                user-select:none;
+                -ms-user-select:none;
             }
             .dropper {
                 cursor: url(/cursors/eyedropper.png) 5 21,auto;
@@ -67,7 +83,7 @@
             <option value="mosaic" data-opts='{"blockSize":4}'>Pixelate</option>
           </select>
             <label class="control-label" for="colorpicker">Stroke Color</label>
-            <div class="input-append color" data-color="rgba(0, 0, 0,1.0)" data-color-format="rgba" id="colorpicker">
+            <div unselectable="on" class="input-append color" data-color="rgba(0, 0, 0,1.0)" data-color-format="rgba" id="colorpicker">
               <span class="add-on"><i style="background-color: rgba(0, 0, 0,1.0)"></i></span>
             </div>
             <label class="control-label" for="tools">Stroke Color</label>
@@ -137,7 +153,7 @@
 </div>
 <div class="span10">
         
-        <div id="canvasContainer">
+        <div id="canvasContainer" unselectable="on">
             <div id="imageContainer"></div>
         </div>
 </div>
@@ -145,7 +161,7 @@
     var startUrl = "<%= req.params.url%>";
 </script>
 </script>
-<script type="text/javascript" src="/scripts/kinetic-v3.9.8.min.js"></script>
+<script type="text/javascript" src="/scripts/kinetic-v3.10.0.js"></script>
 <script src="/js/bootstrap-colorpicker.js"></script>
 <script src="/js/pixtastic.min.js"></script>
 <script type="text/javascript" src="/scripts/doodlr.js"></script>
